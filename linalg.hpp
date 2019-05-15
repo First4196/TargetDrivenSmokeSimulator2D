@@ -13,16 +13,16 @@
 #include <valarray>
 #include <functional>
 
-#define matrix std::valarray<std::valarray<float>>
-#define vec std::valarray<float>
+#define matrix std::valarray<std::valarray<double>>
+#define vec std::valarray<double>
 
-void conjugate_gradient(float * A, vec d);
+void conjugate_gradient(double * A, vec d);
 
-matrix toMatrix(float * A, int N);
+matrix toMatrix(double * A, int N);
 
 vec matrixMultiply(matrix & A, vec & d);
 
-float dot(vec & a, vec & b);
+double dot(vec & a, vec & b);
 
 vec applyPreconditioner(vec r);
 

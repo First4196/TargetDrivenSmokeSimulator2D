@@ -8,12 +8,14 @@ cmake_policy(SET CMP0015 NEW)
 add_subdirectory(vecmath)
 
 set(SRCS
+    target_driven.cpp
     fluid_sim.cpp
     linalg.cpp
     main.cpp
 )
 
 set(HEADERS
+    target_driven.hpp
     fluid_sim.hpp
     linalg.hpp
     MAC.h

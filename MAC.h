@@ -13,13 +13,13 @@
 
 using namespace std;
 struct GridPoint {
-  float velocity;
-  float temperature;
-  float concentration;
-  float up;
-  float down;
-  float left;
-  float right;
+  double velocity;
+  double temperature;
+  double concentration;
+  double up;
+  double down;
+  double left;
+  double right;
 };
 
 class MAC {
@@ -58,56 +58,56 @@ public:
     r[col] = newPoint;
   }
   
-  const void setConcentration(int row, int col, float concentration){
+  const void setConcentration(int row, int col, double concentration){
     assert (row < grid.size());
     vector<GridPoint> r = grid[row];
     assert(col < r.size());
     r[col].concentration = concentration;
   }
   
-  const float getVelocity(int row, int col) {
+  const double getVelocity(int row, int col) {
     assert(row < grid.size());
     vector<GridPoint> r = grid[row];
     assert(col < r.size());
     return r[col].velocity;
   }
   
-  const float getTemperature(int row, int col) {
+  const double getTemperature(int row, int col) {
     assert(row < grid.size());
     vector<GridPoint> r = grid[row];
     assert(col < r.size());
     return r[col].temperature;      
   }
   
-  const float getConcentration(int row, int col) {
+  const double getConcentration(int row, int col) {
     assert(row < grid.size());
     vector<GridPoint> r = grid[row];
     assert(col < r.size());
     return r[col].concentration;
   }
   
-  const float getUp(int row, int col) {
+  const double getUp(int row, int col) {
     assert(row < grid.size());
     vector<GridPoint> r = grid[row];
     assert(col < r.size());
     return r[col].up;
   }
   
-  const float getDown(int row, int col) {
+  const double getDown(int row, int col) {
     assert(row < grid.size());
     vector<GridPoint> r = grid[row];
     assert(col < r.size());
     return r[col].down;
   }
   
-  const float getLeft(int row, int col) {
+  const double getLeft(int row, int col) {
     assert(row < grid.size());
     vector<GridPoint> r = grid[row];
     assert(col < r.size());
     return r[col].left;
   }
   
-  const float getRight(int row, int col) {
+  const double getRight(int row, int col) {
     assert(row < grid.size());
     vector<GridPoint> r = grid[row];
     assert(col < r.size());
