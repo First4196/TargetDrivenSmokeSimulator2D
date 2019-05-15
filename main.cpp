@@ -69,6 +69,14 @@ static int mouse_y, prev_mouse_y;
 // const
 static double MAX_COLOR = 255.0f;
 
+// get working directory
+std::string getWorkingDirectory() {
+	char buffer[MAX_PATH];
+	GetModuleFileName(NULL, buffer, MAX_PATH);
+	std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+	return std::string(buffer).substr(0, pos);
+}
+
 // free data
 static void free_data ( void ){
 	if (u) free(u);
@@ -264,64 +272,9 @@ static void motion_func ( int x, int y ){
     mouse_x = x;
     mouse_y = y;
 }
-// relate mouse input forces
-static void get_from_UI(double * d, double * u, double * v, double * temp, int curr_color_mode) {
-	/*int i, j, size = (N+2)*(N+2);
-
-	for ( i=0 ; i<size ; i++ ) {
-		u[i] = v[i] = d[i] = temp[i] = 0.0f;
-	}
-	if (!mouse_down[0] && !mouse_down[2]) return;
-
-	i = (int)((       mx /(double)win_x)*N+1);
-	j = (int)(((win_y-my)/(double)win_y)*N+1);
-	if ( i<1 || i>N || j<1 || j>N ) return;
-
-	if (mouse_down[0]){
-
-		//i = (int)((       mx /(double)win_x)*N+1);
-		//j = (int)(((win_y-my)/(double)win_y)*N+1);
-
-		//if ( i<1 || i>N || j<1 || j>N ) return;
-
-		if ( add_mode == VELOCITY_MODE ) {
-			if (curr_color_mode == 3){
-				u[IX(i,j)] = force * (mx-(omx));
-				v[IX(i,j)] = force * ((omy)-my);
-				std::cout << mx << omx << std::endl;
-				std::cout << my << omy << std::endl;
-				omx = mx;
-				omy = my;
-
-			}
-		}
-
-		else if ( add_mode == SMOKE_MODE ) {
-			if (color_mode == curr_color_mode){
-				d[IX(i,j)] = smoke_source;
-			}
-		}
-
-		else if ( add_mode == TEMPERATURE_MODE ) {
-			temp[IX(i, j)] = temp_source;
-		}
-
-		//omx = mx;
-		//omy = my;
-	}
-	if (mouse_down[2]) {
-		for (int start = 0; start < block_width; start++) {
-			for (int end = 0; end < block_height; end++) {
-				boundary[IX(i + start, j + end)] = 1.0f;
-			}
-		}
-	}*/
-	return;
-}
 
 // main loop function
 static void idle_func ( void ){    
-    //get_from_UI(p_prev, u_prev, v_prev);
     
     sim_step(N, dt, viscosity, diffusion, sigma, vf, vd, vg, u, u_prev, v, v_prev, p, p_prev, p_blur,
 		p_targets[current_target], p_targets_blur[current_target], tmp1, tmp2);
@@ -329,6 +282,7 @@ static void idle_func ( void ){
 	current_time += dt;
 	std::cout << "Current_time : " << current_time << std::endl;
 	std::cout << "Current_target : " << current_target << std::endl;
+
 	if (current_target < num_targets && current_time > targets_time[current_target]) {
 		current_target++;
 	}
@@ -366,8 +320,19 @@ static void open_glut_window ( void ){
 int main ( int argc, char ** argv ){
     glutInit ( &argc, argv );
 
+	std::string DATA_PATH;
+	if (argc == 1) {
+		DATA_PATH = getWorkingDirectory() + "\\data";
+	}
+	else if (argc == 2) {
+		DATA_PATH = argv[1];
+	}
+	else {
+		return -1;
+	}
+
 	{
-		std::ifstream cfg("C:\\Users\\first\\Desktop\\Workspace\\realtime_physics_simulation\\TargetDrivenSmokeSimulator2D\\data\\cfg.txt");
+		std::ifstream cfg(DATA_PATH + "\\cfg.txt");
 
 		cfg >> N >> dt >> viscosity >> diffusion;
 		cfg >> sigma >> vf >> vd >> vg;
@@ -400,74 +365,19 @@ int main ( int argc, char ** argv ){
     if (!allocate_data()) exit(1);
     clear_data ();
 
-	// init density from p_init.txt
-	/*{
-		std::ifstream p_init("C:\\Users\\first\\Desktop\\Workspace\\realtime_physics_simulation\\TargetDrivenSmokeSimulator2D\\data\\p_init.txt");
-		for (int i = 1; i <= N; i++) {
-			for (int j = 1; j <= N; j++) {
-				double tmp;
-				p_init >> tmp;
-				p[IX(i, j)] = tmp;
-			}
-		}
-	}*/
-
-	// init density as rect
-	{
-		int xmin = N * 1 / 8;
-		int xmax = N * 2 / 8;
-		int ymin = N * 1 / 8;
-		int ymax = N * 7 / 8;
-		double _p = 0.5;
-		for (int i = xmin; i <= xmax; i++) {
-			for (int j = ymin; j <= ymax; j++) {
-				p[IX(i, j)] = _p;
-				p_targets[0][IX(i, j)] = _p;
-			}
-		}
-	}
-
 	// load target density from p_target_{i}.txt
-	/*{
-		for (int k = 0; k < num_targets; k++) {
-			std::ifstream p_target("C:\\Users\\first\\Desktop\\Workspace\\realtime_physics_simulation\\TargetDrivenSmokeSimulator2D\\data\\p_target" + std::to_string(k) + ".txt");
+	{
+		for (int k = 0; k <= num_targets; k++) {
+			std::ifstream file(DATA_PATH + "\\" + std::to_string(k) + ".txt");
 			for (int i = 1; i <= N; i++) {
 				for (int j = 1; j <= N; j++) {
 					double tmp;
-					p_target >> tmp;
-					p_targets[k][IX(i, j)] = tmp;
+					file >> tmp;
+					p_targets[k][IX(i, j)] = max(0.1, tmp);
+					if (k == 0) {
+						p[IX(i, j)] = max(0.1, tmp);
+					}
 				}
-			}
-		}
-	}*/
-
-	// set target density as donut
-	{
-		int cenx = N / 2;
-		int ceny = N / 2;
-		double r = 0; // N / 8
-		double R = N / 4;
-		double _p = 0.5;
-		for (int i = cenx - R; i <= cenx + R; i++) {
-			for (int j = ceny - R; j <= ceny + R; j++) {
-				double dx = i - cenx;
-				double dy = j - ceny;
-				double dr = sqrt(dx * dx + dy * dy);
-				if (r <= dr && dr <= R) {
-					p_targets[1][IX(i, j)] = _p;
-				}
-			}
-		}
-	}
-	{
-		int xmin = N * 6 / 8;
-		int xmax = N * 7 / 8;
-		int ymin = N * 1 / 8;
-		int ymax = N * 7 / 8;
-		double _p = 0.5;
-		for (int i = xmin; i <= xmax; i++) {
-			for (int j = ymin; j <= ymax; j++) {
-				p_targets[2][IX(i, j)] = _p;
 			}
 		}
 	}

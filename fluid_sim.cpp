@@ -39,10 +39,8 @@ void set_boundary ( int N, int btype, double *d ){
     d[IX(N+1,N+1)] = 0.5f * (d[IX(N,N+1)]+d[IX(N+1,N)]);
 }
 
-// iterative solver 
-// laplace(d) = d0
 void lin_solve(int N, int btype, double *d, double *d0, double a, double c){
-    for (int k=0; k<20; k++) {
+	for (int k = 0; k < 100; k++) {
 		for (int i = 1; i <= N; i++) {
 			for (int j = 1; j <= N; j++) {
 				d[IX(i, j)] = (d0[IX(i, j)] + a * (d[IX(i - 1, j)] + d[IX(i + 1, j)] + d[IX(i, j - 1)] + d[IX(i, j + 1)])) / c;
@@ -143,4 +141,7 @@ void sim_step(int N, double dt, double viscosity, double diffusion, double sigma
 	advect(N, 0, p, p_prev, u, v, dt);
 	SWAP(p_prev, p);
 	gather(N, p, p_prev, p_target, p_target_blur, tmp1, tmp2, vg, dt);
+
+	std::cout << "total_density : " << get_total(N, p) << std::endl;
+	std::cout << "target_density : " << get_total(N, p_target) << std::endl;
 }
